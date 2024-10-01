@@ -1,0 +1,14 @@
+{
+  "name": "middleware",
+  "version": "1.0.0",
+  "description": "Middleware para balanceo de carga y gestión de tokens",
+  "main": "middleware.js",
+  "scripts": {
+    "start": "node middleware.js"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1"
+  }
+}

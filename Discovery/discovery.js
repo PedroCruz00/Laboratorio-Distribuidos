@@ -1,25 +1,19 @@
-const axios = require('axios');
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
+const express = require('express');
+const app = express();
+app.use(express.json());
 
-async function registerServer(newServerUrl) {
-  try {
-    const middlewareUrl = `http://${process.env.MIDDLEWARE_IP}:${process.env.MIDDLEWARE_PORT}/register`;
-    console.log(`Intentando registrar el servidor en ${middlewareUrl}...`);
+let backendServers = [];
 
-    const response = await axios.post(middlewareUrl, {
-      url: newServerUrl
-    });
-
-    if (response.status === 200) {
-      console.log('Servidor registrado exitosamente:', response.data);
-    } else {
-      console.error('Error al registrar el servidor, código de estado:', response.status);
+app.post('/register', (req, res) => {
+    const { url } = req.body;
+    if (!url) {
+        return res.status(400).json({ error: 'URL no proporcionada' });
     }
-  } catch (error) {
-    console.error('Error al registrar el servidor:', error.message);
-  }
-}
+    backendServers.push(url);
+    res.json({ message: 'Servidor registrado', servers: backendServers });
+});
 
-const serverUrl = `http://${process.env.SERVER_IP}:${process.env.SERVER_PORT}`;
-registerServer(serverUrl); // Al iniciar, el servidor se registra automáticamente
+app.listen(process.env.DISCOVERY_PORT, () => {
+    console.log(`Discovery service corriendo en el puerto ${process.env.DISCOVERY_PORT}`);
+});
