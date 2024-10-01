@@ -1,10 +1,20 @@
-# Usamos una imagen de nginx para servir el frontend
-FROM nginx:alpine
+# Usamos una imagen de Node.js como base
+FROM node:alpine
 
-# Copiar los archivos del frontend al directorio de nginx
-COPY . /usr/share/nginx/html
+# Crear directorio de la aplicación en el contenedor
+WORKDIR /app
 
-# Exponer el puerto para servir la página
-EXPOSE 80
+# Copiar el package.json y el package-lock.json
+COPY package*.json ./
 
-# El servidor nginx se inicia automáticamente
+# Instalar dependencias
+RUN npm install
+
+# Copiar los archivos del frontend
+COPY . .
+
+# Exponer el puerto para servir el frontend
+EXPOSE 3000
+
+# Iniciar el servidor para servir el frontend
+CMD ["node", "server.js"]

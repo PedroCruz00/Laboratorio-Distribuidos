@@ -3,16 +3,16 @@ services:
   backend1:
     build: ./backend
     ports:
-      - "3000:3000"
+      - "3004:3004"
     environment:
-      - PORT=3000
+      - PORT=3004
 
   backend2:
     build: ./backend
     ports:
-      - "3002:3002"
+      - "3005:3005"
     environment:
-      - PORT=3002
+      - PORT=3005
 
   middleware:
     build: ./middleware
@@ -20,5 +20,12 @@ services:
       - "3001:3001"
     environment:
       - PORT=3001
-      - BACKEND_URL_1=http://backend1:3000
-      - BACKEND_URL_2=http://backend2:3002
+      - BACKEND_URL_1=http://backend1:3004
+      - BACKEND_URL_2=http://backend2:3005
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "9000:9000"
+    environment:
+      - PORT=9000

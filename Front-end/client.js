@@ -7,13 +7,14 @@ document.getElementById('sendButton').addEventListener('click', () => {
       return;
   }
 
-  fetch('http://localhost:3001/countTokens', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ text: textInput })
-  })
+  fetch('http://localhost:3005/countTokens', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ text: textInput })
+})
+
   .then(response => response.json())
   .then(data => {
       resultElement.textContent = `El número de tokens es: ${data.tokenCount}`;
