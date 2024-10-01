@@ -1,8 +1,14 @@
 require('dotenv').config(); // Cargar las variables de entorno
 const express = require('express');
 const path = require('path');
+const cors = require('cors'); // Importa CORS
 
 const app = express();
+
+// Configurar CORS para permitir el acceso desde el puerto 9000
+app.use(cors({
+    origin: 'http://localhost:9000' // Permite solicitudes desde este origen
+}));
 
 // Servir archivos estáticos (index.html, CSS, JS)
 app.use(express.static(path.join(__dirname, '')));
