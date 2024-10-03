@@ -7,7 +7,7 @@ const app = express();
 
 // Configurar CORS para permitir el acceso desde el puerto 9000
 app.use(cors({
-    origin: 'http://localhost:9000' // Permite solicitudes desde este origen
+    origin: 'http://192.168.162.89:9000' // Permite solicitudes desde este origen
 }));
 
 // Servir archivos estáticos (index.html, CSS, JS)

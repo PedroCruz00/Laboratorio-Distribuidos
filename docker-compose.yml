@@ -25,7 +25,7 @@ services:
     ports:
       - "3005:3005"
     environment:
-      - PORT=3004
+      - PORT=3005
       - DISCOVERY_URL=http://discovery:4000
     networks:
       - app-network
