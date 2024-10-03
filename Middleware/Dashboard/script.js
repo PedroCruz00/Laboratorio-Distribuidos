@@ -16,12 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
             logs.forEach(log => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${log.instanceName}</td>
-                    <td>${log.requestType}</td>
-                    <td>${JSON.stringify(log.payload)}</td>  <!-- Asegúrate de convertir el payload a string -->
-                    <td>${log.date}</td>
-                    <td>${JSON.stringify(log.response)}</td> <!-- Convertir la respuesta a string -->
-                    <td>${log.url}</td>
+                    <td style="color:white">${log.instanceName}</td>
+                    <td style="color:white">${log.requestType}</td>
+                    <td style="color:white">${JSON.stringify(log.payload)}</td>  <!-- Asegúrate de convertir el payload a string -->
+                    <td style="color:white">${log.date}</td>
+                    <td style="color:white">${JSON.stringify(log.response)}</td> <!-- Convertir la respuesta a string -->
+                    <td style="color:white">${log.url}</td>
                 `;
                 serverTable.appendChild(row);
             });
@@ -51,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
             data.logs.forEach(log => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${log.url}</td>
-                    <td>${log.requests > 0 ? 'Activo' : 'Inactivo'}</td>
+                    <td style="color:white";>${log.url}</td>
+                    <td style="color:white">${log.requests > 0 ? 'Activo' : 'Inactivo'}</td>
                 `;
                 serverStatusTable.appendChild(row);
             });
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/monitor');
             const data = await response.json();
 
-            serverSelect.innerHTML = '<option value="">Todos los servidores</option>'; // Opción por defecto
+            serverSelect.innerHTML = '<option value="" style="color:white">Todos los servidores</option>'; // Opción por defecto
             data.logs.forEach(log => {
                 const option = document.createElement('option');
                 option.value = log.url;
@@ -97,8 +97,8 @@ const updateServerStatusTable = async () => {
         data.logs.forEach(server => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${server.url}</td>
-                <td>${server.status || 'Inactivo'}</td>
+                <td style="color:white">${server.url}</td>
+                <td style="color:white">${server.status || 'Inactivo'}</td>
             `;
             tableBody.appendChild(row);
         });
@@ -107,6 +107,9 @@ const updateServerStatusTable = async () => {
     }
 };
 
+document.getElementById('reloadButton').addEventListener('click', function() {
+    location.reload();
+});
 // Llamar a la función cada 5 segundos para mantener la tabla actualizada
 setInterval(updateServerStatusTable, 5000);
 updateServerStatusTable();
