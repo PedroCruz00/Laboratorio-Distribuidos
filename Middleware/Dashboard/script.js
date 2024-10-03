@@ -1,59 +1,112 @@
-// Simular datos del servidor (puedes reemplazar esto con una solicitud real a tu API)
-const serverData = [
-    {
-        url: 'http://server1.url',
-        connections: 45,
-        logs: ['Iniciado', 'Conexión establecida', 'Error de base de datos']
-    },
-    {
-        url: 'http://server2.url',
-        connections: 30,
-        logs: ['Iniciado', 'Conexión establecida', 'Conexión perdida']
-    },
-    {
-        url: 'http://server3.url',
-        connections: 67,
-        logs: ['Iniciado', 'Error 500', 'Reiniciado']
-    }
-];
+document.addEventListener('DOMContentLoaded', () => {
+    const serverTable = document.getElementById('serverTable').querySelector('tbody');
+    const serverStatusTable = document.getElementById('serverStatusTable').querySelector('tbody');
+    const serverSelect = document.getElementById('serverFilter');
 
-// Función para cargar los datos en la tabla desde la API del middleware
-async function loadServerData() {
+    // Función para cargar los logs del servidor
+    const loadLogs = async (server = '') => {
+        try {
+            const response = await fetch(`/logs?server=${server}`);
+            const logs = await response.json();
+
+            // Limpiar tabla
+            serverTable.innerHTML = '';
+
+            // Rellenar la tabla con logs
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${log.instanceName}</td>
+                    <td>${log.requestType}</td>
+                    <td>${JSON.stringify(log.payload)}</td>  <!-- Asegúrate de convertir el payload a string -->
+                    <td>${log.date}</td>
+                    <td>${JSON.stringify(log.response)}</td> <!-- Convertir la respuesta a string -->
+                    <td>${log.url}</td>
+                `;
+                serverTable.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error cargando logs:', error);
+        }
+    };
+
+    // Cargar logs al inicio
+    loadLogs();
+
+    // Filtro por servidor
+    serverSelect.addEventListener('change', () => {
+        loadLogs(serverSelect.value);
+    });
+
+    // Función para cargar los estados de los servidores
+    const loadServerStatus = async () => {
+        try {
+            const response = await fetch('/monitor');
+            const data = await response.json();
+
+            // Limpiar la tabla de estado de servidores
+            serverStatusTable.innerHTML = '';
+
+            // Rellenar la tabla con el estado de los servidores
+            data.logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${log.url}</td>
+                    <td>${log.requests > 0 ? 'Activo' : 'Inactivo'}</td>
+                `;
+                serverStatusTable.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error cargando estados de servidores:', error);
+        }
+    };
+
+    // Cargar los nombres de los servidores en el filtro y el estado de los servidores
+    const loadServerOptions = async () => {
+        try {
+            const response = await fetch('/monitor');
+            const data = await response.json();
+
+            serverSelect.innerHTML = '<option value="">Todos los servidores</option>'; // Opción por defecto
+            data.logs.forEach(log => {
+                const option = document.createElement('option');
+                option.value = log.url;
+                option.textContent = log.url;
+                serverSelect.appendChild(option);
+            });
+
+            // Cargar los estados de los servidores
+            loadServerStatus();
+        } catch (error) {
+            console.error('Error cargando servidores:', error);
+        }
+    };
+
+    // Cargar opciones de servidores al inicio
+    loadServerOptions();
+});
+
+const updateServerStatusTable = async () => {
     try {
-        const response = await fetch('/monitor'); // Hacer la solicitud a la ruta /monitor
-        const data = await response.json(); // Convertir la respuesta a formato JSON
+        const response = await fetch('/monitor');
+        const data = await response.json();
 
-        const tableBody = document.querySelector("#serverTable tbody");
+        const tableBody = document.querySelector('#serverStatusTable tbody');
+        tableBody.innerHTML = ''; // Limpiar la tabla
 
-        // Limpiar la tabla antes de agregar nuevas filas
-        tableBody.innerHTML = '';
-
-        // Recorrer los datos obtenidos de la API y crear las filas de la tabla
         data.logs.forEach(server => {
-            const row = document.createElement("tr");
-
-            // Crear columna para la URL del servidor
-            const urlCell = document.createElement("td");
-            urlCell.textContent = server.url;
-            row.appendChild(urlCell);
-
-            // Crear columna para el número de conexiones
-            const connectionsCell = document.createElement("td");
-            connectionsCell.textContent = server.requests;
-            row.appendChild(connectionsCell);
-
-            // Crear columna para los logs (por ahora vacío, deberías cargar logs reales si los tienes)
-            const logsCell = document.createElement("td");
-            logsCell.textContent = 'No disponible'; // En este caso, aún no tenemos logs específicos
-            row.appendChild(logsCell);
-
-            // Agregar la fila al cuerpo de la tabla
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${server.url}</td>
+                <td>${server.status || 'Inactivo'}</td>
+            `;
             tableBody.appendChild(row);
         });
     } catch (error) {
-        console.error('Error al cargar los datos del servidor:', error);
+        console.error('Error al actualizar la tabla de servidores:', error);
     }
-}
+};
 
-// Llamar a la función para cargar los datos cuando la página esté lista
-document.addEventListener('DOMContentLoaded', loadServerData);
+// Llamar a la función cada 5 segundos para mantener la tabla actualizada
+setInterval(updateServerStatusTable, 5000);
+updateServerStatusTable();

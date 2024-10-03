@@ -35,3 +35,8 @@ app.listen(port, () => {
     console.log(`Backend corriendo en el puerto ${port}`);
     registerServer(); // Registrar en el Discovery al iniciar
 });
+
+// Nuevo endpoint de healthCheck
+app.get('/healthCheck', (req, res) => {
+    res.status(200).send('OK');
+});
