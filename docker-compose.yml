@@ -1,17 +1,19 @@
 services:
+
+  discovery:
+    build: ./Discovery
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+
   backend1:
     build: ./Back-end
     ports:
       - "3004:3004"
     environment:
       - PORT=3004
-
-  backend2:
-    build: ./Back-end
-    ports:
-      - "3005:3005"
-    environment:
-      - PORT=3005
+      - DISCOVERY_URL=http://discovery:4000
 
   middleware:
     build: ./Middleware
@@ -20,7 +22,7 @@ services:
     environment:
       - PORT=3001
       - BACKEND_URL_1=http://backend1:3004
-      - BACKEND_URL_2=http://backend2:3005
+      - DISCOVERY_URL=http://discovery:4000
 
   frontend:
     build: ./Front-end
