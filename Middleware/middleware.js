@@ -2,26 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const winston = require('winston');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configuración de winston
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-    ),
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'middleware.log' })
-    ]
-});
-
-const discoveryURL = process.env.DISCOVERY_URL; // URL del Discovery
+const discoveryURL = process.env.DISCOVERY_URL;
 let backendServers = [];
 const requestCounts = {};
 
@@ -33,27 +19,27 @@ const registerServers = async () => {
         backendServers.forEach(server => {
             if (!requestCounts[server]) requestCounts[server] = 0;
         });
-        logger.info('Servidores registrados en middleware', { servers: backendServers });
+        console.log('Servidores registrados en middleware:', backendServers);
     } catch (error) {
-        logger.error('Error obteniendo servidores del Discovery', { message: error.message });
+        console.error(`Error obteniendo servidores del Discovery: ${error.message}`);
     }
 };
 
 // Función para obtener el servidor menos cargado
 const getLeastConnectedServer = () => {
     const leastConnected = Object.keys(requestCounts).reduce((a, b) => requestCounts[a] <= requestCounts[b] ? a : b);
-    logger.info('Servidor menos cargado seleccionado', { server: leastConnected });
+    console.log(`Servidor menos cargado seleccionado: ${leastConnected}`);
     return leastConnected;
 };
 
 // Reiniciar el conteo de peticiones cada minuto
 setInterval(() => {
-    logger.info('Reiniciando conteo de peticiones');
+    console.log('Reiniciando conteo de peticiones');
     Object.keys(requestCounts).forEach(server => requestCounts[server] = 0);
 }, 60000);
 
 // Registrar servidores cada cierto tiempo
-setInterval(registerServers, 10000); // Actualizar la lista cada 5 segundos
+setInterval(registerServers, 10000); // Actualizar la lista cada 10 segundos
 
 // Ruta para contar tokens
 app.post('/countTokens', async (req, res) => {
@@ -64,10 +50,10 @@ app.post('/countTokens', async (req, res) => {
     try {
         const response = await axios.post(`${server}/countTokens`, { text }, { timeout: 5000 });
         requestCounts[server] += 1;
-        logger.info('Petición a backend exitosa', { server, text });
+        console.log(`Petición exitosa al backend: ${server}`);
         res.json(response.data);
     } catch (error) {
-        logger.error('Error en servidor', { server, message: error.message });
+        console.error(`Error en servidor: ${server}, mensaje: ${error.message}`);
         res.status(503).json({ error: 'Ningún servidor está disponible.' });
     }
 });
@@ -78,12 +64,12 @@ app.get('/monitor', (req, res) => {
         url: server,
         requests: requestCounts[server],
     }));
-    logger.info('Monitor solicitado', { logs });
+    console.log('Monitor solicitado:', logs);
     res.json({ logs });
 });
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
-    logger.info('Middleware corriendo', { port });
+    console.log(`Middleware corriendo en el puerto ${port}`);
     registerServers(); // Llamar al inicio para registrar servidores
 });
