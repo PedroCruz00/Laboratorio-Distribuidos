@@ -2,10 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Servir archivos estáticos desde la carpeta Dashboard
+app.use(express.static(path.join(__dirname, 'Dashboard')));
 
 const discoveryURL = process.env.DISCOVERY_URL;
 let backendServers = [];
@@ -58,14 +62,19 @@ app.post('/countTokens', async (req, res) => {
     }
 });
 
-// Monitor para ver el estado del sistema
+// Ruta para el monitor que retorna la información de los servidores y las conexiones
 app.get('/monitor', (req, res) => {
     const logs = backendServers.map(server => ({
         url: server,
-        requests: requestCounts[server],
+        requests: requestCounts[server] || 0, // Número de peticiones hechas al servidor
     }));
     console.log('Monitor solicitado:', logs);
     res.json({ logs });
+});
+
+// Nueva ruta para servir el Dashboard
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Dashboard', 'index.html')); // Servir el HTML del Dashboard
 });
 
 const port = process.env.PORT || 3001;
