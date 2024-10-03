@@ -5,7 +5,11 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - PORT=4000
+      - DISCOVERY_PORT=4000
+    networks:
+      - app-network
+
+
 
   backend1:
     build: ./Back-end
@@ -14,6 +18,17 @@ services:
     environment:
       - PORT=3004
       - DISCOVERY_URL=http://discovery:4000
+    networks:
+      - app-network
+  backend2:
+    build: ./Back-end
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3004
+      - DISCOVERY_URL=http://discovery:4000
+    networks:
+      - app-network
 
   middleware:
     build: ./Middleware
@@ -21,12 +36,10 @@ services:
       - "3001:3001"
     environment:
       - PORT=3001
-      - BACKEND_URL_1=http://backend1:3004
       - DISCOVERY_URL=http://discovery:4000
+    networks:
+      - app-network
 
-  frontend:
-    build: ./Front-end
-    ports:
-      - "9000:9000"
-    environment:
-      - PORT=9000
+networks:
+  app-network:
+    driver: bridge
