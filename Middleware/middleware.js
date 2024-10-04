@@ -73,29 +73,44 @@ app.post('/countTokens', async (req, res) => {
     const { text } = req.body;
     if (!text) return res.status(400).json({ error: 'Texto no proporcionado' });
 
-    let server = getLeastConnectedServer();
-    const requestLog = {
-        instanceName: server,
-        requestType: 'POST',
-        payload: text,
-        date: new Date().toISOString(),
-        response: '',
-        url: `${server}/countTokens`
-    };
+    let attempts = 0;
+    let success = false;
+    let lastError = null;
 
-    try {
-        const response = await axios.post(`${server}/countTokens`, { text }, { timeout: 5000 });
-        requestCounts[server] += 1;
-        console.log(`Petición exitosa al backend: ${server}`);
+    // Intentar con diferentes servidores hasta que se complete la solicitud o se acaben los servidores
+    while (attempts < backendServers.length && !success) {
+        let server = getLeastConnectedServer();  // Seleccionar el servidor menos cargado
+        attempts++;
+        
+        const requestLog = {
+            instanceName: server,
+            requestType: 'POST',
+            payload: text,
+            date: new Date().toISOString(),
+            response: '',
+            url: `${server}/countTokens`
+        };
 
-        requestLog.response = response.data;
-        logs.push(requestLog);  // Guardar log
-        res.json(response.data);
-    } catch (error) {
-        console.error(`Error en servidor: ${server}, mensaje: ${error.message}`);
-        requestLog.response = `Error: ${error.message}`;
-        logs.push(requestLog);  // Guardar log en caso de error
-        res.status(503).json({ error: 'Ningún servidor está disponible.' });
+        try {
+            const response = await axios.post(`${server}/countTokens`, { text }, { timeout: 5000 });
+            requestCounts[server] += 1;
+            console.log(`Petición exitosa al backend: ${server}`);
+
+            requestLog.response = response.data;
+            logs.push(requestLog);  // Guardar log
+            success = true;
+            return res.json(response.data);  // Responder con éxito
+        } catch (error) {
+            console.error(`Error en servidor: ${server}, mensaje: ${error.message}`);
+            requestLog.response = `Error: ${error.message}`;
+            logs.push(requestLog);  // Guardar log en caso de error
+            serverStatus[server] = 'Inactivo';  // Marcar el servidor como inactivo
+            lastError = error.message;
+        }
+    }
+
+    if (!success) {
+        return res.status(503).json({ error: 'Ningún servidor está disponible. Último error: ' + lastError });
     }
 });
 
