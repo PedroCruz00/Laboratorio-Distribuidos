@@ -9,9 +9,9 @@ app.use(cors());
 app.use(express.json());
 
 let logs = [];
-let serverStatus = {};  // Definimos la variable para almacenar el estado de los servidores
+let serverStatus = {};  
 
-// Servir archivos estáticos desde la carpeta Dashboard
+
 app.use(express.static(path.join(__dirname, 'Dashboard')));
 
 const discoveryURL = process.env.DISCOVERY_URL;
@@ -120,11 +120,11 @@ app.get('/logs', (req, res) => {
 
 // Ruta para servir el Dashboard
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Dashboard', 'index.html')); // Servir el HTML del Dashboard
+    res.sendFile(path.join(__dirname, 'Dashboard', 'index.html')); 
 });
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
     console.log(`Middleware corriendo en el puerto ${port}`);
-    registerServers(); // Llamar al inicio para registrar servidores
+    registerServers(); 
 });
